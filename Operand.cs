@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+
 namespace CodeReviews.Console.Calculator;
 
 public enum Operand
@@ -9,16 +11,21 @@ public enum Operand
     Division
 }
 
-public class Operator(string? input)
+public class Operator : IParsable<Operator>
 {
-    private Operand _operand = input?.ToUpper().Trim() switch
+    private readonly Operand? _operand;
+    
+    public Operator(string? input)
     {
-        "+" => Operand.Addition,
-        "-" => Operand.Subtraction,
-        "*" => Operand.Multiplication,
-        "/" => Operand.Division,
-        _ => default
-    };
+        _operand = input?.ToUpper().Trim() switch
+        {
+            "+" => Operand.Addition,
+            "-" => Operand.Subtraction,
+            "*" => Operand.Multiplication,
+            "/" => Operand.Division,
+            _ => null
+        };
+    }
 
     public double Result(double a, double b) => _operand switch
     {
@@ -38,9 +45,22 @@ public class Operator(string? input)
         _ => throw new InvalidEnumArgumentException("Operand not recognized")
     };
 
-    public void Randomize(Random rnd)
+    public static Operator Parse(string s, IFormatProvider? provider)
     {
-        var values = Enum.GetValues<Operand>();
-        _operand = values[rnd.Next(values.Length - 1)];
+        return TryParse(s, provider, out var result) ? result : throw new FormatException("Not a valid input Operator");
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Operator result)
+    {
+        var op = new Operator(s);
+
+        if (op._operand == null)
+        {
+            result = null;
+            return false;
+        }
+
+        result = op;
+        return true;
     }
 }

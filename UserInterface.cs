@@ -15,9 +15,14 @@ public static class UserInterface
             _num1 = AskUserANumber();
             _num2 = AskUserANumber("second");
             Operator op = AskUserOperand();
-            
-            PrintResult(op);
-            
+            try
+            {
+                PrintResult(op);
+            }
+            catch (DivideByZeroException e)
+            {
+                Console.WriteLine(e.Message);
+            }
             endApp = AskCloseApp();
         }
     }
@@ -31,48 +36,18 @@ public static class UserInterface
 
     private static double AskUserANumber(string amount = "first")
     {
-        double num;
-        bool isInvalidInput = false;
-        do
-        {
-            if (isInvalidInput)
-            {
-                Console.WriteLine("This is not a valid input. Entre a double");
-            }
-            Console.WriteLine($"Type the {amount} number, and press ENTER");
-            isInvalidInput = !double.TryParse(Console.ReadLine(), out num);
-        } while (isInvalidInput);
-
-        return num;
+        return AskUser.Ask<double>(
+            [$"Type the {amount} number, and press ENTER"]);
     }
 
     private static Operator AskUserOperand()
     {
-        string? choice;
-        bool isInvalidOption = false;
-        do
-        {
-            if (isInvalidOption)
-            {
-                Console.WriteLine("Choose a correct option");
-            }
-            Console.WriteLine("Choose an option from the following list");
-            Console.WriteLine("\t+ - Add");
-            Console.WriteLine("\t- - Subtract");
-            Console.WriteLine("\t* - Multiply");
-            Console.WriteLine("\t/ - Divide");
-            
-            choice = Console.ReadLine();
-            isInvalidOption = !new[] { "+", "-", "*", "/" }.Contains(choice);
-        } while (isInvalidOption);
-
-        if (choice == "/" && _num2 == 0)
-        {
-            Console.WriteLine("Cannot divide by zero");
-            _num2 = AskUserANumber("second");
-        }
-
-        return new Operator(choice);
+        return AskUser.Ask<Operator>(
+            ["Choose an option from the following list",
+                "\t+ - Add",
+                "\t- - Subtract",
+                "\t* - Multiply",
+                "\t/ - Divide"]);
     }
 
     private static void PrintResult(Operator op)
